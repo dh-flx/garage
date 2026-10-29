@@ -3,13 +3,12 @@ use aws_sdk_s3::config::Credentials;
 use aws_sdk_s3::{Client, Config};
 
 use super::garage::Key;
-use crate::common::garage::DEFAULT_PORT;
 
-pub fn build_client(key: &Key) -> Client {
+pub fn build_client(key: &Key, endpoint: http::Uri) -> Client {
 	let credentials = Credentials::new(&key.id, &key.secret, None, None, "garage-integ-test");
 
 	let config = Config::builder()
-		.endpoint_url(format!("http://127.0.0.1:{}", DEFAULT_PORT))
+		.endpoint_url(endpoint.to_string())
 		.region(super::REGION)
 		.credentials_provider(credentials)
 		.behavior_version(BehaviorVersion::latest())

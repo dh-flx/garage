@@ -78,6 +78,19 @@ impl ApiHandler for S3ApiServer {
 	type Error = Error;
 
 	fn parse_endpoint(&self, req: &Request<IncomingBody>) -> Result<S3ApiEndpoint, Error> {
+		// Reject unsupported protection before any endpoint can mutate state,
+		// including CreateBucket, PUT, COPY and multipart initiation/completion.
+		if req
+			.headers()
+			.keys()
+			.any(|name| crate::protection::unsupported_protection_name(name.as_str()))
+		{
+			return Err(CommonError::NotImplemented(
+				"Object Lock retention and legal holds are not supported".to_owned(),
+			)
+			.into());
+		}
+
 		let authority = req
 			.headers()
 			.get(header::HOST)

@@ -13,6 +13,7 @@ mod lifecycle;
 mod list;
 mod multipart;
 mod post_object;
+mod protection;
 mod put;
 pub mod website;
 

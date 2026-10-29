@@ -72,6 +72,14 @@ pub async fn handle_post_object(
 		if name == "file" {
 			break field;
 		}
+		// Browser form uploads carry S3 options in fields rather than headers.
+		// Never acknowledge a retention/hold request without enforcing it.
+		if crate::protection::unsupported_protection_name(name.as_str()) {
+			return Err(garage_api_common::common_error::CommonError::NotImplemented(
+				"Object Lock retention and legal holds are not supported".to_owned(),
+			)
+			.into());
+		}
 
 		if let Ok(content) = HeaderValue::from_str(&field.text().await?) {
 			if params.insert(&name, content).is_some() {

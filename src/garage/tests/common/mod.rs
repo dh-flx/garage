@@ -42,7 +42,7 @@ impl Context {
 
 		let garage = garage::instance();
 		let key = garage.key(None);
-		let client = client::build_client(&key);
+		let client = client::build_client(&key, garage.s3_uri());
 		let admin_client = reqwest::Client::new();
 		let custom_request = CustomRequester::new_s3(garage, &key);
 		#[cfg(feature = "k2v")]

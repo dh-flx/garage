@@ -5,6 +5,7 @@ mod objects;
 mod permissions;
 mod postobject;
 mod presigned;
+mod protection;
 mod signature_encoding;
 mod simple;
 mod ssec;

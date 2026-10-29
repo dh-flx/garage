@@ -16,6 +16,41 @@ const UTF8_CONTENT_DISPOSITION: &str = "attachment; filename=\"копия фай
 const REGION: &str = "garage-integ-test";
 const BOUNDARY: &str = "boundary-garage-integ-test";
 
+#[tokio::test]
+async fn test_protection_post_fields_leave_existing_object_unchanged() {
+	let ctx = common::context();
+	let bucket = ctx.create_bucket("protection-post");
+	ctx.client
+		.put_object()
+		.bucket(&bucket)
+		.key("existing")
+		.body(aws_sdk_s3::primitives::ByteStream::from_static(b"original"))
+		.send()
+		.await
+		.unwrap();
+	for name in ["x-amz-object-lock-mode", "X-Amz-Object-Lock-Legal-Hold"] {
+		let response = send_post_object(
+			&ctx,
+			&bucket,
+			"existing",
+			"test.txt",
+			&[(name, "ON")],
+			"replacement",
+		)
+		.await;
+		assert_eq!(response.status(), StatusCode::NOT_IMPLEMENTED);
+	}
+	let stored = ctx
+		.client
+		.get_object()
+		.bucket(&bucket)
+		.key("existing")
+		.send()
+		.await
+		.unwrap();
+	assert_bytes_eq!(stored.body, b"original");
+}
+
 async fn send_post_object(
 	ctx: &common::Context,
 	bucket: &str,
